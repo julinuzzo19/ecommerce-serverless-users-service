@@ -1,0 +1,104 @@
+service: serverless-users-service
+frameworkVersion: "3"
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  architecture: arm64
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+
+  logRetentionInDays: 14
+
+  httpApi:
+    cors: true
+
+  environment:
+    NODE_ENV: ${env:STAGE}
+    NODE_OPTIONS: --enable-source-maps
+    USERS_TABLE: ${env:USERS_TABLE}
+    REGION: ${self:provider.region}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.usersTableName}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.usersTableName}/index/*
+
+package:
+  patterns:
+    - "!**/*.test.ts"
+    - "!**/*.spec.ts"
+    - "!README.md"
+    - "!TODO.md"
+    - "!DONE.md"
+
+custom:
+  usersTableName: ${env:USERS_TABLE}
+
+# Por ahora lo dejamos vacío: vas a ir agregando handlers poco a poco.
+functions:
+  users:
+    createUser:
+      handler: src/functions/users/create.handler.ts
+      events:
+        - httpApi:
+            method: POST
+            path: /users
+    getUserById:
+      handler: src/functions/users/get-by-id.handler.ts
+      events:
+        - httpApi:
+            method: GET
+            path: /users/{id}
+    getUserByEmail:
+      handler: src/functions/users/get-by-email.handler.ts
+      events:
+        - httpApi:
+            method: GET
+            path: /users/by-email
+    listUsers:
+      handler: src/functions/users/list.handler.ts
+      events:
+        - httpApi:
+            method: GET
+            path: /users
+    updateUser:
+      handler: src/functions/users/update.handler.ts
+      events:
+        - httpApi:
+            method: PUT
+            path: /users/{id}
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${env:USERS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+
+  Outputs:
+    UsersTableName:
+      Value: ${env:USERS_TABLE}
