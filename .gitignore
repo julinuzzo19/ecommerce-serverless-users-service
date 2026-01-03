@@ -3,3 +3,6 @@ package-lock.json
 DONE.md
 TODO.md
 .env
+.build
+.serverless
+.dynamodb

@@ -4,10 +4,11 @@ frameworkVersion: "3"
 plugins:
   - serverless-plugin-typescript
   - serverless-dotenv-plugin
+  - serverless-offline
 
 provider:
   name: aws
-  runtime: nodejs22.x
+  runtime: nodejs20.x
   architecture: arm64
   stage: ${opt:stage, 'dev'}
   region: us-east-1
@@ -18,10 +19,10 @@ provider:
     cors: true
 
   environment:
-    NODE_ENV: ${env:STAGE}
+    NODE_ENV: ${env:STAGE, 'dev'}
     NODE_OPTIONS: --enable-source-maps
-    USERS_TABLE: ${env:USERS_TABLE}
-    REGION: ${self:provider.region}
+    USERS_TABLE: ${env:USERS_TABLE, 'users-service-db'}
+    REGION: ${env:REGION, 'us-east-1'}
 
   iam:
     role:
@@ -47,58 +48,66 @@ package:
     - "!DONE.md"
 
 custom:
-  usersTableName: ${env:USERS_TABLE}
+  usersTableName: users-service-db
 
 # Por ahora lo dejamos vacío: vas a ir agregando handlers poco a poco.
 functions:
-  users:
-    createUser:
-      handler: src/functions/users/create.handler.ts
-      events:
-        - httpApi:
-            method: POST
-            path: /users
-    getUserById:
-      handler: src/functions/users/get-by-id.handler.ts
-      events:
-        - httpApi:
-            method: GET
-            path: /users/{id}
-    getUserByEmail:
-      handler: src/functions/users/get-by-email.handler.ts
-      events:
-        - httpApi:
-            method: GET
-            path: /users/by-email
-    listUsers:
-      handler: src/functions/users/list.handler.ts
-      events:
-        - httpApi:
-            method: GET
-            path: /users
-    updateUser:
-      handler: src/functions/users/update.handler.ts
-      events:
-        - httpApi:
-            method: PUT
-            path: /users/{id}
+  createUser:
+    handler: src/functions/users/create.handler
+    events:
+      - httpApi:
+          method: POST
+          path: /users
+  getUserById:
+    handler: src/functions/users/get-by-id.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /users/{id}
+  getUserByEmail:
+    handler: src/functions/users/get-by-email.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /users/by-email
+  listUsers:
+    handler: src/functions/users/list.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /users
+  updateUser:
+    handler: src/functions/users/update.handler
+    events:
+      - httpApi:
+          method: PUT
+          path: /users/{id}
 
 resources:
   Resources:
     UsersTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${env:USERS_TABLE}
+        TableName: ${self:custom.usersTableName}
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
-          - AttributeName: userId
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
+          - AttributeName: id
             KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
         PointInTimeRecoverySpecification:
           PointInTimeRecoveryEnabled: true
 
   Outputs:
     UsersTableName:
-      Value: ${env:USERS_TABLE}
+      Value: ${self:custom.usersTableName}
