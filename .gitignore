@@ -6,3 +6,6 @@ TODO.md
 .build
 .serverless
 .dynamodb
+
+.env.local
+.env.dev

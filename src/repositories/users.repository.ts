@@ -7,7 +7,7 @@ import {
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { BaseRepository } from "./base.repository";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import { Indexes, Tables } from "../shared/constants/tables";
 import { CreateUserData, UpdateUserData, User } from "../models/user.model";
 
@@ -18,7 +18,7 @@ export class UsersRepository extends BaseRepository {
 
   async create(data: CreateUserData): Promise<User> {
     const user: User = {
-      id: uuidv4(),
+      id: randomUUID(),
       ...data,
     };
 
