@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install --legacy-peer-deps
+
+COPY . .
+
+COPY scripts/docker/entrypoint.sh /usr/local/bin/users-entrypoint.sh
+RUN chmod +x /usr/local/bin/users-entrypoint.sh
+
+EXPOSE 3012
+
+ENTRYPOINT ["sh", "/usr/local/bin/users-entrypoint.sh"]

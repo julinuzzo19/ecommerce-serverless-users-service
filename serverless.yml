@@ -36,8 +36,8 @@ provider:
             - dynamodb:Query
             - dynamodb:Scan
           Resource:
-            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.usersTableName}
-            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.usersTableName}/index/*
+            - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${self:custom.usersTableName}
+            - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${self:custom.usersTableName}/index/*
 
 package:
   patterns:
@@ -50,10 +50,16 @@ package:
 custom:
   dotenv:
     path: .env.${sls:stage}
-  usersTableName: users-service-db
+  usersTableName: ${env:USERS_TABLE, 'users-service-db'}
 
 # Por ahora lo dejamos vacío: vas a ir agregando handlers poco a poco.
 functions:
+  healthCheck:
+    handler: src/functions/health/health-check.handler
+    events:
+      - httpApi:
+          method: GET
+          path: /health
   createUser:
     handler: src/functions/users/create.handler
     events:
