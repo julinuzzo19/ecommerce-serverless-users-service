@@ -1,10 +1,39 @@
 service: serverless-users-service
-frameworkVersion: "3"
+frameworkVersion: "4"
 
 plugins:
-  - serverless-plugin-typescript
   - serverless-dotenv-plugin
   - serverless-offline
+
+# Configuración ESBuild para TypeScript
+build:
+  esbuild:
+    bundle: true # Hace bundle de dependencias
+    minify: false # Desactivado en desarrollo
+    sourcemap: true # Source maps para debugging
+    target: node20 # Usa Node.js 20
+    platform: node
+    # concurrency: 10 # Compilación paralela más rápida NO FUNCIONA
+    # keepOutputDirectory: true # Mantiene directorio de salida NO FUNCIONA
+    # Configurar exclusiones automáticas
+    exclude:
+      - "@aws-sdk/*" # AWS SDK ya está en Lambda runtime
+      - "aws-lambda" # Ya disponible en Lambda
+    # Configurar alias si usas paths en tsconfig
+    # alias:
+    #   "@src/*": "./src/*"
+
+# Configurar cómo se empaca cada función
+package:
+  individually: true # Cada función se empaca por separado
+  patterns:
+    - "!**/*.test.ts"
+    - "!**/*.spec.ts"
+    - "!README.md"
+    - "!TODO.md"
+    - "!DONE.md"
+    - "!.git/**" # Excluir git
+    - "!node_modules/.cache/**" # Excluir cache
 
 provider:
   name: aws
@@ -16,13 +45,22 @@ provider:
   logRetentionInDays: 7
 
   httpApi:
-    cors: true
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedHeaders:
+        - "*"
+      allowedMethods:
+        - "*"
+      allowCredentials: false
 
   environment:
     NODE_ENV: ${env:STAGE, 'dev'}
     NODE_OPTIONS: --enable-source-maps
     USERS_TABLE: ${env:USERS_TABLE, 'users-service-db'}
     REGION: ${env:REGION, 'us-east-1'}
+    # Variables específicas por stage
+    STAGE: ${sls:stage}
 
   iam:
     role:
@@ -38,14 +76,6 @@ provider:
           Resource:
             - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${self:custom.usersTableName}
             - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${self:custom.usersTableName}/index/*
-
-package:
-  patterns:
-    - "!**/*.test.ts"
-    - "!**/*.spec.ts"
-    - "!README.md"
-    - "!TODO.md"
-    - "!DONE.md"
 
 custom:
   dotenv:
@@ -91,31 +121,31 @@ functions:
           method: PUT
           path: /users/{id}
 
-resources:
-  Resources:
-    UsersTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:custom.usersTableName}
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-          - AttributeName: email
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: EmailIndex
-            KeySchema:
-              - AttributeName: email
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-        PointInTimeRecoverySpecification:
-          PointInTimeRecoveryEnabled: true
+# resources:
+#   Resources:
+#     UsersTable:
+#       Type: AWS::DynamoDB::Table
+#       Properties:
+#         TableName: ${self:custom.usersTableName}
+#         BillingMode: PAY_PER_REQUEST
+#         AttributeDefinitions:
+#           - AttributeName: id
+#             AttributeType: S
+#           - AttributeName: email
+#             AttributeType: S
+#         KeySchema:
+#           - AttributeName: id
+#             KeyType: HASH
+#         GlobalSecondaryIndexes:
+#           - IndexName: email-index
+#             KeySchema:
+#               - AttributeName: email
+#                 KeyType: HASH
+#             Projection:
+#               ProjectionType: ALL
+#         PointInTimeRecoverySpecification:
+#           PointInTimeRecoveryEnabled: true
 
-  Outputs:
-    UsersTableName:
-      Value: ${self:custom.usersTableName}
+#   Outputs:
+#     UsersTableName:
+#       Value: ${self:custom.usersTableName}

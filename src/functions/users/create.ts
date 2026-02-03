@@ -5,7 +5,7 @@ import { CreateUserDto } from "../../dtos/create-user.dto";
 import { handleError } from "../../shared/utils/error-handler";
 
 export const handler = async (
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   try {
     //   const queryParams = event.queryStringParameters;

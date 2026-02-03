@@ -26,7 +26,7 @@ export class UsersRepository extends BaseRepository {
       new PutCommand({
         TableName: this.tableName,
         Item: user,
-      })
+      }),
     );
 
     return user;
@@ -37,7 +37,7 @@ export class UsersRepository extends BaseRepository {
       new GetCommand({
         TableName: this.tableName,
         Key: { id },
-      })
+      }),
     );
 
     return (result.Item as User) || null;
@@ -47,7 +47,7 @@ export class UsersRepository extends BaseRepository {
     const result = await this.docClient.send(
       new ScanCommand({
         TableName: this.tableName,
-      })
+      }),
     );
 
     return (result.Items as User[]) || [];
@@ -62,7 +62,7 @@ export class UsersRepository extends BaseRepository {
         ExpressionAttributeValues: {
           ":email": email,
         },
-      })
+      }),
     );
 
     return (result.Items as User[]) || [];
@@ -88,7 +88,7 @@ export class UsersRepository extends BaseRepository {
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,
         ReturnValues: "ALL_NEW",
-      })
+      }),
     );
 
     return result.Attributes as User;
@@ -99,7 +99,7 @@ export class UsersRepository extends BaseRepository {
       new DeleteCommand({
         TableName: this.tableName,
         Key: { id },
-      })
+      }),
     );
   }
 

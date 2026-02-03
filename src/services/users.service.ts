@@ -17,7 +17,7 @@ type HttpError = {
 const httpError = (
   statusCode: number,
   message: string,
-  details?: unknown
+  details?: unknown,
 ): HttpError => ({
   statusCode,
   message,
@@ -57,12 +57,12 @@ export class UsersService {
   async createUser(createUserDto: CreateUserDto): Promise<string> {
     try {
       const existing = await this.usersRepository.findByEmail(
-        createUserDto.email
+        createUserDto.email,
       );
       if (existing.length > 0) {
         throw httpError(
           409,
-          `User with email ${createUserDto.email} already exists`
+          `User with email ${createUserDto.email} already exists`,
         );
       }
 
@@ -72,6 +72,8 @@ export class UsersService {
         role: createUserDto.role,
         avatar: createUserDto.avatar ?? "",
       };
+
+      console.log({ data });
 
       const user = await this.usersRepository.create(data);
 
@@ -88,7 +90,7 @@ export class UsersService {
 
   async updateUser(
     userId: string,
-    updateData: UpdateUserData
+    updateData: UpdateUserData,
   ): Promise<string> {
     if (!userId) {
       throw httpError(400, "userId is required");
@@ -101,13 +103,13 @@ export class UsersService {
 
     if (updateData.email && updateData.email !== existing.email) {
       const usersWithEmail = await this.usersRepository.findByEmail(
-        updateData.email
+        updateData.email,
       );
       const takenByOther = usersWithEmail.some((u) => u.id !== userId);
       if (takenByOther) {
         throw httpError(
           409,
-          `User with email ${updateData.email} already exists`
+          `User with email ${updateData.email} already exists`,
         );
       }
     }

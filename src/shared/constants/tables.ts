@@ -3,5 +3,5 @@ export const Tables = {
 } as const;
 
 export const Indexes = {
-  USERS_EMAIL: "EmailIndex",
+  USERS_EMAIL: "email-index",
 } as const;
