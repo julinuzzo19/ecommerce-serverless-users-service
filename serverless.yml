@@ -2,7 +2,6 @@ service: serverless-users-service
 frameworkVersion: "4"
 
 plugins:
-  - serverless-dotenv-plugin
   - serverless-offline
 
 # Configuración ESBuild para TypeScript
@@ -54,10 +53,12 @@ provider:
         - "*"
       allowCredentials: false
 
+  # Obligatorio mapear variables de entorno
   environment:
     NODE_ENV: ${env:STAGE, 'dev'}
     NODE_OPTIONS: --enable-source-maps
     USERS_TABLE: ${env:USERS_TABLE, 'users-service-db'}
+    DYNAMODB_ENDPOINT: ${env:DYNAMODB_ENDPOINT, 'http://localhost:4566'}
     REGION: ${env:REGION, 'us-east-1'}
     # Variables específicas por stage
     STAGE: ${sls:stage}
@@ -74,13 +75,8 @@ provider:
             - dynamodb:Query
             - dynamodb:Scan
           Resource:
-            - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${self:custom.usersTableName}
-            - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${self:custom.usersTableName}/index/*
-
-custom:
-  dotenv:
-    path: .env.${sls:stage}
-  usersTableName: ${env:USERS_TABLE, 'users-service-db'}
+            - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${env:USERS_TABLE, 'users-service-db'}
+            - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${env:USERS_TABLE, 'users-service-db'}/index/*
 
 # Por ahora lo dejamos vacío: vas a ir agregando handlers poco a poco.
 functions:

@@ -1,15 +1,16 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 // Cliente singleton (reutilizable entre invocaciones)
 let docClient: DynamoDBDocumentClient | null = null;
 
 export const getDynamoDBClient = (): DynamoDBDocumentClient => {
   if (!docClient) {
-    console.log('🔌 Creando cliente DynamoDB');
+    console.log("🔌 Creando cliente DynamoDB");
 
+    console.log({ envs: process.env.DYNAMODB_ENDPOINT });
     const client = new DynamoDBClient({
-      region: process.env.REGION || 'us-east-1',
+      region: process.env.REGION || "us-east-1",
       // Para testing local con DynamoDB local
       ...(process.env.DYNAMODB_ENDPOINT && {
         endpoint: process.env.DYNAMODB_ENDPOINT,
