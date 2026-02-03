@@ -8,7 +8,6 @@ export const getDynamoDBClient = (): DynamoDBDocumentClient => {
   if (!docClient) {
     console.log("🔌 Creando cliente DynamoDB");
 
-    console.log({ envs: process.env.DYNAMODB_ENDPOINT });
     const client = new DynamoDBClient({
       region: process.env.REGION || "us-east-1",
       // Para testing local con DynamoDB local
