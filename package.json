@@ -5,10 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dynamodb:up": "docker compose up -d dynamodb",
-    "dynamodb:down": "docker compose down",
-    "dynamodb:wait": "node scripts/dynamodb/wait.js",
-    "dynamodb:init": "node scripts/dynamodb/init-users-table.js",
     "package": "serverless package",
     "deploy": "serverless deploy",
     "deploy:dev": "serverless deploy --stage dev",

@@ -1,7 +1,6 @@
 import { CreateUserDto } from "../dtos/create-user.dto";
 import { CreateUserData, UpdateUserData, User } from "../models/user.model";
 import { UsersRepository } from "../repositories/users.repository";
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 
 export interface UserByEmailResponseDto {
   userId: string;
@@ -143,5 +142,3 @@ export class UsersService {
     }
   }
 }
-
-export const usersService = new UsersService();

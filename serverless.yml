@@ -57,11 +57,14 @@ provider:
   environment:
     NODE_ENV: ${env:STAGE, 'dev'}
     NODE_OPTIONS: --enable-source-maps
-    USERS_TABLE: ${env:USERS_TABLE, 'users-service-db'}
-    DYNAMODB_ENDPOINT: ${env:DYNAMODB_ENDPOINT, 'http://localhost:4566'}
     REGION: ${env:REGION, 'us-east-1'}
     # Variables específicas por stage
     STAGE: ${sls:stage}
+    # DynamoDB
+    DYNAMODB_ENDPOINT: ${env:DYNAMODB_ENDPOINT, 'http://localhost:4566'}
+    USERS_TABLE: ${env:USERS_TABLE, 'users-service-db'}
+    # SQS Queues
+    USER_CREATED_QUEUE_URL: ${env:USER_CREATED_QUEUE_URL, 'http://localhost:4566/000000000000/user-created-queue'}
 
   iam:
     role:
@@ -77,6 +80,11 @@ provider:
           Resource:
             - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${env:USERS_TABLE, 'users-service-db'}
             - arn:aws:dynamodb:${env:REGION, self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:table/${env:USERS_TABLE, 'users-service-db'}/index/*
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+          Resource:
+            - arn:aws:sqs:${self:provider.region}:${env:AWS_ACCOUNT_ID, '000000000000'}:user-created-queue
 
 # Por ahora lo dejamos vacío: vas a ir agregando handlers poco a poco.
 functions:
