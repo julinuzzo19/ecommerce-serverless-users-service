@@ -9,4 +9,5 @@ TODO.md
 
 .env.local
 .env.dev
+.env.docker
 .vscode

@@ -4,7 +4,7 @@ import { container } from "../../infrastructure/di/container";
 const usersService = container.usersService;
 
 export const handler = async (
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   const users = await usersService.findAll();
 

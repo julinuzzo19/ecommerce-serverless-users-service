@@ -19,11 +19,9 @@ if [ ! -f "node_modules/@aws-sdk/client-dynamodb/package.json" ]; then
   fi
 fi
 
-echo "⏳ Waiting for DynamoDB Local..."
+echo "⏳ Waiting for DynamoDB (LocalStack)..."
 node scripts/dynamodb/wait.js
 
-echo "🧱 Ensuring users table exists..."
-node scripts/dynamodb/init-users-table.js
 
 echo "🚀 Starting serverless-offline on :3012"
 exec npx serverless offline --stage docker --host 0.0.0.0 --httpPort 3012
