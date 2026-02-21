@@ -1,8 +1,10 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { usersService } from "../../services/users.service";
 import { validateDto } from "../../shared/utils/validator";
 import { CreateUserDto } from "../../dtos/create-user.dto";
 import { handleError } from "../../shared/utils/error-handler";
+import { container } from "../../infrastructure/di/container";
+
+const usersService = container.usersService;
 
 export const handler = async (
   event: APIGatewayProxyEvent,

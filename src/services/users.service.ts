@@ -25,10 +25,7 @@ const httpError = (
 });
 
 export class UsersService {
-  private usersRepository: UsersRepository;
-  constructor() {
-    this.usersRepository = new UsersRepository();
-  }
+  constructor(private readonly usersRepository: UsersRepository) {}
 
   async findById(id: string): Promise<User | null> {
     if (!id) return null;

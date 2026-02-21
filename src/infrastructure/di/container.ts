@@ -1,156 +1,70 @@
-/**
- * Esta implementación simple de un container de dependencias me ofrece flexibilidad y control sobre la creación y gestión de instancias.
- * Permitiendo importar dependencias de manera individual según se necesiten.
- *
- * Tambien es util para testing, ya que puedo reemplazar dependencias con mocks fácilmente, usando el método `set`.
- *
- * # Tradeoffs vs usar un framework de DI completo:
- *
- * - Pros:
- *   - Muy simple y liviano, sin dependencias adicionales. IMPORTANTE EN LAMBDA, donde el cold start importa.
- *
- * - Contras:
- *   - No tiene features avanzadas como inyección automática, scopes, etc.
- *   - Requiere más boilerplate para definir getters para cada dependencia.
- *
- */
-
 import { SQSClient } from "@aws-sdk/client-sqs";
+import { UsersRepository } from "../../repositories/users.repository";
+import { UsersService } from "../../services/users.service";
+import { IMessagePublisher } from "../../services/ports/IMessagePublisher";
+import { SQSMessagePublisher } from "../messaging/SQSMessagePublisher";
 import {
   createSQSClient,
   getQueueUrlMap,
 } from "../messaging/config/sqs-client";
-import { IMessagePublisher } from "../../services/ports/IMessagePublisher";
-import { SQSMessagePublisher } from "../messaging/SQSMessagePublisher";
-import { UsersRepository } from "../../repositories/users.repository";
 
 class Container {
-  private instances: Map<string, any> = new Map();
+  private readonly instances = new Map<string, unknown>();
 
-  /**
-   * Cliente SQS compartido por todos los servicios de mensajería.
-   * Esto es importante porque el cliente SQS mantiene connection pooling interno.
-   */
-  getSQSClient(): SQSClient {
-    const key = "sqsClient";
-
+  private getOrCreate<T>(key: string, factory: () => T): T {
     if (!this.instances.has(key)) {
-      // La primera vez que se pide, creamos el cliente
-      console.log("Creating SQS client instance (cold start)");
-      this.instances.set(key, createSQSClient());
+      this.instances.set(key, factory());
     }
 
-    // En invocaciones subsecuentes (warm starts), retornamos la instancia existente
-    return this.instances.get(key);
+    return this.instances.get(key) as T;
   }
 
-  /**
-   * Message Publisher singleton.
-   * Depende del SQS client, que también obtenemos como singleton.
-   */
+  getSQSClient(): SQSClient {
+    return this.getOrCreate("sqsClient", () => createSQSClient());
+  }
+
   getMessagePublisher(): IMessagePublisher {
-    const key = "messagePublisher";
-
-    if (!this.instances.has(key)) {
-      console.log("Creating MessagePublisher instance");
-
-      this.instances.set(
-        key,
+    return this.getOrCreate(
+      "messagePublisher",
+      () =>
         new SQSMessagePublisher({
-          client: this.getSQSClient(), // Reutilizamos el cliente singleton
+          client: this.getSQSClient(),
           queueUrlMap: getQueueUrlMap(),
         }),
-      );
-    }
-
-    return this.instances.get(key);
+    );
   }
 
-  /**
-   * Repository de órdenes.
-   * En un sistema real, esto también tendría un connection pool de base de datos
-   * que querríamos reutilizar entre invocaciones.
-   */
-  getUserRepository() {
-    const key = "userRepository";
-
-    if (!this.instances.has(key)) {
-      console.log("Creating UserRepository instance");
-      this.instances.set(key, new UsersRepository());
-    }
-
-    return this.instances.get(key);
+  getUsersRepository(): UsersRepository {
+    return this.getOrCreate("usersRepository", () => new UsersRepository());
   }
 
-  getCreateOrderUseCase(): CreateOrderUseCase {
-    const key = "createOrderUseCase";
-
-    if (!this.instances.has(key)) {
-      console.log("Creating CreateOrderUseCase instance");
-
-      // Inyectamos las dependencias que el caso de uso necesita
-      this.instances.set(
-        key,
-        new CreateOrderUseCase(
-          this.getOrderRepository(), // Singleton compartido
-          this.getMessagePublisher(), // Singleton compartido
-          console, // Logger simple, podría ser un singleton también
-        ),
-      );
-    }
-
-    return this.instances.get(key);
+  getUsersService(): UsersService {
+    return this.getOrCreate(
+      "usersService",
+      () => new UsersService(this.getUsersRepository()),
+    );
   }
 
-  /**
-   * Método útil para testing: permite reemplazar una dependencia con un mock.
-   * En producción nunca se usa, pero en tests es invaluable.
-   */
+  get usersRepository(): UsersRepository {
+    return this.getUsersRepository();
+  }
+
+  get usersService(): UsersService {
+    return this.getUsersService();
+  }
+
   set<T>(key: string, instance: T): void {
     this.instances.set(key, instance);
   }
 
-  /**
-   * Método para limpiar todas las instancias.
-   * Útil principalmente en testing para tener un estado limpio entre tests.
-   */
   clear(): void {
     this.instances.clear();
   }
-
-  /**
-   * Message Consumer singleton.
-   * También depende del mismo cliente SQS.
-   */
-  //   getMessageConsumer(): IMessageConsumer {
-  //     const key = "messageConsumer";
-
-  //     if (!this.instances.has(key)) {
-  //       console.log("Creating MessageConsumer instance");
-
-  //       this.instances.set(
-  //         key,
-  //         new SQSMessageConsumer({
-  //           client: this.getSQSClient(), // Mismo cliente reutilizado
-  //           queueUrlMap: getQueueUrlMap(),
-  //         }),
-  //       );
-  //     }
-
-  //     return this.instances.get(key);
-  //   }
 }
 
-// Creamos una única instancia del container y la exportamos
-// Esta instancia del container es el singleton, no las dependencias individuales
-const container = new Container();
-
-// Exportamos funciones helper que internamente usan el container
-// Esto hace que el código sea más limpio en los puntos de uso
-export const getMessagePublisher = () => container.getMessagePublisher();
-// export const getMessageConsumer = () => container.getMessageConsumer();
-export const getCreateOrderUseCase = () => container.getCreateOrderUseCase();
-export const getOrderRepository = () => container.getOrderRepository();
-
-// También exportamos el container para casos avanzados o testing
-export { container };
+export const container = new Container();
+export const getUsersService = (): UsersService => container.getUsersService();
+export const getUsersRepository = (): UsersRepository =>
+  container.getUsersRepository();
+export const getMessagePublisher = (): IMessagePublisher =>
+  container.getMessagePublisher();
