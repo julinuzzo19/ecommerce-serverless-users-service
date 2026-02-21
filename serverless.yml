@@ -1,26 +1,9 @@
 service: serverless-users-service
-frameworkVersion: "4"
+frameworkVersion: "3"
 
 plugins:
+  - serverless-plugin-typescript
   - serverless-offline
-
-# Configuración ESBuild para TypeScript
-build:
-  esbuild:
-    bundle: true # Hace bundle de dependencias
-    minify: false # Desactivado en desarrollo
-    sourcemap: true # Source maps para debugging
-    target: node20 # Usa Node.js 20
-    platform: node
-    # concurrency: 10 # Compilación paralela más rápida NO FUNCIONA
-    # keepOutputDirectory: true # Mantiene directorio de salida NO FUNCIONA
-    # Configurar exclusiones automáticas
-    exclude:
-      - "@aws-sdk/*" # AWS SDK ya está en Lambda runtime
-      - "aws-lambda" # Ya disponible en Lambda
-    # Configurar alias si usas paths en tsconfig
-    # alias:
-    #   "@src/*": "./src/*"
 
 # Configurar cómo se empaca cada función
 package:
