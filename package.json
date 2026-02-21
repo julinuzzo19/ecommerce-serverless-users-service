@@ -10,8 +10,7 @@
     "deploy:dev": "serverless deploy --stage dev",
     "remove:dev": "serverless remove --stage dev --verbose",
     "typecheck": "tsc --noEmit",
-    "offline": "serverless offline --stage local --httpPort 4000",
-    "offline:local": "npm run dynamodb:up && npm run dynamodb:wait && npm run dynamodb:init && npm run offline"
+    "offline": "serverless offline --stage local --httpPort 4000"
   },
   "keywords": [],
   "author": "",
