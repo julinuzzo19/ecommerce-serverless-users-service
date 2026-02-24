@@ -52,7 +52,7 @@ async function main() {
       KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
       GlobalSecondaryIndexes: [
         {
-          IndexName: "EmailIndex",
+          IndexName: "email-index",
           KeySchema: [{ AttributeName: "email", KeyType: "HASH" }],
           Projection: { ProjectionType: "ALL" },
         },
