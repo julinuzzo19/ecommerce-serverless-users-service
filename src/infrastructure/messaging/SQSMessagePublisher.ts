@@ -1,10 +1,6 @@
 // src/infrastructure/messaging/SQSMessagePublisher.ts
 
-import {
-  SQSClient,
-  SendMessageCommand,
-  SendMessageBatchCommand,
-} from "@aws-sdk/client-sqs";
+import { SQSClient, SendMessageCommand, SendMessageBatchCommand } from "@aws-sdk/client-sqs";
 import { IMessagePublisher } from "../../services/ports/IMessagePublisher";
 
 /**

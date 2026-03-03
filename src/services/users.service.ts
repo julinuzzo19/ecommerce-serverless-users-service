@@ -14,11 +14,7 @@ type HttpError = {
   details?: unknown;
 };
 
-const httpError = (
-  statusCode: number,
-  message: string,
-  details?: unknown,
-): HttpError => ({
+const httpError = (statusCode: number, message: string, details?: unknown): HttpError => ({
   statusCode,
   message,
   ...(details !== undefined ? { details } : {}),
@@ -53,14 +49,9 @@ export class UsersService {
 
   async createUser(createUserDto: CreateUserDto): Promise<string> {
     try {
-      const existing = await this.usersRepository.findByEmail(
-        createUserDto.email,
-      );
+      const existing = await this.usersRepository.findByEmail(createUserDto.email);
       if (existing.length > 0) {
-        throw httpError(
-          409,
-          `User with email ${createUserDto.email} already exists`,
-        );
+        throw httpError(409, `User with email ${createUserDto.email} already exists`);
       }
 
       const data: CreateUserData = {
@@ -85,10 +76,7 @@ export class UsersService {
     }
   }
 
-  async updateUser(
-    userId: string,
-    updateData: UpdateUserData,
-  ): Promise<string> {
+  async updateUser(userId: string, updateData: UpdateUserData): Promise<string> {
     if (!userId) {
       throw httpError(400, "userId is required");
     }
@@ -99,15 +87,10 @@ export class UsersService {
     }
 
     if (updateData.email && updateData.email !== existing.email) {
-      const usersWithEmail = await this.usersRepository.findByEmail(
-        updateData.email,
-      );
+      const usersWithEmail = await this.usersRepository.findByEmail(updateData.email);
       const takenByOther = usersWithEmail.some((u) => u.id !== userId);
       if (takenByOther) {
-        throw httpError(
-          409,
-          `User with email ${updateData.email} already exists`,
-        );
+        throw httpError(409, `User with email ${updateData.email} already exists`);
       }
     }
 

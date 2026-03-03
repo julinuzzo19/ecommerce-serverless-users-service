@@ -5,9 +5,7 @@ import { UpdateUserDto } from "../../dtos/update-user.dto";
 
 const usersService = container.usersService;
 
-export const handler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const userId = event.pathParameters?.id;
 
   if (!userId) {

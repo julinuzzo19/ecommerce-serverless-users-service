@@ -33,8 +33,7 @@ export function getQueueUrlMap(): Record<string, string> {
 
   if (isLocal) {
     return {
-      "user-created-queue":
-        "http://localhost:4566/000000000000/user-created-queue",
+      "user-created-queue": "http://localhost:4566/000000000000/user-created-queue",
     };
   }
 

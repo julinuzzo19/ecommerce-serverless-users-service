@@ -6,9 +6,7 @@ import { container } from "../../infrastructure/di/container";
 
 const usersService = container.usersService;
 
-export const handler = async (
-  event: APIGatewayProxyEvent,
-): Promise<APIGatewayProxyResult> => {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     //   const queryParams = event.queryStringParameters;
     //   const pathParams = event.pathParameters;

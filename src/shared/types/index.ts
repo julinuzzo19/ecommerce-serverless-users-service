@@ -1,9 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 // Tipo para tus handlers
-export type LambdaHandler = (
-  event: APIGatewayProxyEvent
-) => Promise<APIGatewayProxyResult>;
+export type LambdaHandler = (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
 
 // Tipos de respuesta
 export interface ApiResponse<T = any> {

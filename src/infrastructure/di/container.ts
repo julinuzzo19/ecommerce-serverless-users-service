@@ -3,10 +3,7 @@ import { UsersRepository } from "../../repositories/users.repository";
 import { UsersService } from "../../services/users.service";
 import { IMessagePublisher } from "../../services/ports/IMessagePublisher";
 import { SQSMessagePublisher } from "../messaging/SQSMessagePublisher";
-import {
-  createSQSClient,
-  getQueueUrlMap,
-} from "../messaging/config/sqs-client";
+import { createSQSClient, getQueueUrlMap } from "../messaging/config/sqs-client";
 
 class Container {
   private readonly instances = new Map<string, unknown>();
@@ -39,10 +36,7 @@ class Container {
   }
 
   getUsersService(): UsersService {
-    return this.getOrCreate(
-      "usersService",
-      () => new UsersService(this.getUsersRepository()),
-    );
+    return this.getOrCreate("usersService", () => new UsersService(this.getUsersRepository()));
   }
 
   get usersRepository(): UsersRepository {
@@ -64,7 +58,5 @@ class Container {
 
 export const container = new Container();
 export const getUsersService = (): UsersService => container.getUsersService();
-export const getUsersRepository = (): UsersRepository =>
-  container.getUsersRepository();
-export const getMessagePublisher = (): IMessagePublisher =>
-  container.getMessagePublisher();
+export const getUsersRepository = (): UsersRepository => container.getUsersRepository();
+export const getMessagePublisher = (): IMessagePublisher => container.getMessagePublisher();

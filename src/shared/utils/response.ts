@@ -4,7 +4,7 @@ import { ApiResponse } from "../types";
 export const createResponse = (
   statusCode: number,
   body: ApiResponse,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
 ): APIGatewayProxyResult => {
   return {
     statusCode,
@@ -18,10 +18,7 @@ export const createResponse = (
   };
 };
 
-export const success = <T>(
-  data: T,
-  message?: string
-): APIGatewayProxyResult => {
+export const success = <T>(data: T, message?: string): APIGatewayProxyResult => {
   return createResponse(200, {
     success: true,
     data,
@@ -29,10 +26,7 @@ export const success = <T>(
   });
 };
 
-export const created = <T>(
-  data: T,
-  message?: string
-): APIGatewayProxyResult => {
+export const created = <T>(data: T, message?: string): APIGatewayProxyResult => {
   return createResponse(201, {
     success: true,
     data,
@@ -47,27 +41,21 @@ export const badRequest = (error: string): APIGatewayProxyResult => {
   });
 };
 
-export const unauthorized = (
-  error: string = "Unauthorized"
-): APIGatewayProxyResult => {
+export const unauthorized = (error: string = "Unauthorized"): APIGatewayProxyResult => {
   return createResponse(401, {
     success: false,
     error,
   });
 };
 
-export const notFound = (
-  error: string = "Not found"
-): APIGatewayProxyResult => {
+export const notFound = (error: string = "Not found"): APIGatewayProxyResult => {
   return createResponse(404, {
     success: false,
     error,
   });
 };
 
-export const serverError = (
-  error: string = "Internal server error"
-): APIGatewayProxyResult => {
+export const serverError = (error: string = "Internal server error"): APIGatewayProxyResult => {
   return createResponse(500, {
     success: false,
     error,
